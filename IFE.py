@@ -1,26 +1,15 @@
 from tkinter import *
 from PIL import ImageTk,Image
 import sqlite3
-from tkinter.font import Font
+from tkinter import messagebox
 
 root = Tk()
 root.title("IFE Home")
 text = Text(root)
 
-myFont = Font(family="Times New Roman", size=12)
-text.configure(font=myFont)
+# myFont = Font(family="Times New Roman", size=12)
+# text.configure(font=myFont)
 
-
-# conn = sqlite3.connect("IFE_APP.db")
-# #Cursor instance to create table
-# c = conn.cursor()
-# Create table
-# c.execute("""CREATE TABLE All_Subjects(
-#     Code text,
-#     Name text,
-#     Orientation text,
-#     Points text
-#     )""")
 
 #Querring delete from My_Subjects
 def submit_delete():
@@ -35,17 +24,34 @@ def submit_delete():
     #Clearing entries
     del_subj_entry.delete(0, END)
 
-
-
 def submit_add():
+    #Will need this on #3 check to see if a subject already exists in My_Subjects
     conn = sqlite3.connect("IFE_APP.db")
-    c = conn.cursor()
-
-    #Getting subject form All_Subjects and Score from entry 
-    c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points, Score, RealID) SELECT *, '"+ subj_mark_entry.get() + "', '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get()))
-
+    dupl=conn.cursor()
+    dupl.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE RealID = " + add_subj_entry.get())
+    duplcheck = dupl.fetchall()
     conn.commit()
-    conn.close()
+    #Checking MARK input
+    # 1-Checking if the given value is in range(5,11) and is an int (and not a float)
+    if int(subj_mark_entry.get()) not in range(5,11,1):
+        messagebox.showerror("Invalid Input", "Your mark should be in range (5,10)")
+    # 2-Checking if subject ID is in range(1,102) and is an int (and not a float)
+    elif int(add_subj_entry.get()) not in [i for i in range(1,102,1)]:
+        messagebox.showerror("Invalid Input", "The subject ID does not exist")
+    # 3-Checking if subject already exists in My_Subjects (I will create a list)
+    elif duplcheck[0][0] == 1:
+        messagebox.showerror("Invalid Input", "The subject is already registered")
+
+    # 4-Everything is ok - proceeding with the query
+    else:
+        c = conn.cursor()
+
+        #Getting subject form All_Subjects and Score from entry 
+        c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points, Score, RealID) SELECT *, '"+ subj_mark_entry.get() + "', '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get()))
+
+        conn.commit()
+        conn.close()
+        print(duplcheck)
     #Clearing entries
     add_subj_entry.delete(0, END)
     subj_mark_entry.delete(0, END)
@@ -120,17 +126,52 @@ def allquery():
     conn.close()
 
 def myquery():
-    # Tried to open txt file in tkinter window to display greek properly but didn't work
-    # global my_window
-    # my_window = Tk()
-    # T = Text(my_window, state="normal", height=15, width=60)
-    # T.pack()
-    # T.insert(END, open("Lista Mou.txt").read())
-
     conn = sqlite3.connect("IFE_APP.db")
-    c = conn.cursor()
-    c.execute("SELECT * FROM My_Subjects")
-    records = c.fetchall()
+    passed = conn.cursor()
+
+    #Getting all passed classes
+    passed.execute("SELECT * FROM My_Subjects")
+    records = passed.fetchall()
+    conn.commit()
+
+    #Getting avarage score(grade)
+    avg = conn.cursor()
+    avg.execute("SELECT AVG(Score) FROM My_Subjects")
+    avgscore = avg.fetchall()
+    conn.commit()
+
+    #Getting total Points (ECTS)
+    point = conn.cursor()
+    point.execute("SELECT SUM(Points) FROM My_Subjects")
+    totalpoints = point.fetchall()
+    conn.commit()
+
+    #Getting passed core curriculum
+    #'Y' is greek
+    ypo = conn.cursor()
+    ypo.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Υ'")
+    totalypo = ypo.fetchall()
+    conn.commit()
+
+    #Getting optional core corriculumn
+    ypoi = conn.cursor()
+    ypoi.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'ΥEΙ'")
+    totalypoi = ypoi.fetchall()
+    conn.commit()
+
+    ypof = conn.cursor()
+    ypof.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'ΥEΦ'")
+    totalypof = ypof.fetchall()
+    conn.commit()
+
+    epi = conn.cursor()
+    epi.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Ε'")
+    totalepil= epi.fetchall()
+    conn.commit()
+
+
+    conn.close()
+
 
     print_records=""
     for record in records:
@@ -138,13 +179,15 @@ def myquery():
         print_records += "Κωδικός:" + str(record[0])+ " " + "Βαθμός:"+str(record[4]) + " " + "Όνομα:" + str(record[1])+"\n"
     # print(print_records)
     f= open("Lista Mou.txt","w+", encoding="utf-8")
-    f.write(print_records)
-    f.close
-
-
-    conn.commit()
-    conn.close()
-
+    f.write("-Μέσος Όρος: " + str("%.2f" % avgscore[0][0]))
+    f.write("\n-Διδακτικές Μονάδες (ECTS): " + str(totalpoints[0][0]) + "/240")
+    f.write("\n-Ποσοστό ολοκλήρωσης της σχολής: " + str("%.2f" % ((totalpoints[0][0]/240)*100))+"%")
+    f.write("\n-Περασμένα Υποχρεωτικά: " +str(totalypo[0][0])+"/21")
+    f.write("\n-Περασμένα Υποχρεωτικά Επιλογής Ιστορίας: " +str(totalypoi[0][0]))
+    f.write("\n-Περασμένα Υποχρεωτικά Επιλογής Φιλοσοφίας: " +str(totalypof[0][0]))
+    f.write("\n-Περασμένα Επιλογής: " +str(totalepil[0][0])+"/9")
+    f.write("\n\n\n-Αναλυτικά:\n" + print_records)
+    f.close()
 
 #Create a ShowAll Query Button
 query_btn = Button(root, text="Show All Subjects", command=allquery)
@@ -161,9 +204,5 @@ add_btn.grid(row=3, column=0, columnspan=2, pady=10, padx=10, ipadx=103)
 #Delete from My Subjects
 delete_btn = Button(root, text="Delete A Subject", command=delete_subjects)
 delete_btn.grid(row=4, column=0, columnspan=2, pady=10, padx=10, ipadx=92)
-
-# conn.commit()
-# conn.close()
-
 
 root.mainloop()
