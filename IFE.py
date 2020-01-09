@@ -164,9 +164,16 @@ def myquery():
     totalypof = ypof.fetchall()
     conn.commit()
 
+    #Getting optional core corriculumn
     epi = conn.cursor()
     epi.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Ε'")
     totalepil= epi.fetchall()
+    conn.commit()
+
+    #Getting lab courses
+    lab = conn.cursor()
+    lab.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Ερ'")
+    totallab= lab.fetchall()
     conn.commit()
 
 
@@ -176,7 +183,7 @@ def myquery():
     print_records=""
     for record in records:
         #Printing All Subjects
-        print_records += "Κωδικός:" + str(record[0])+ " " + "Βαθμός:"+str(record[4]) + " " + "Όνομα:" + str(record[1])+"\n"
+        print_records += "Κωδικός:" + str(record[0])+ " Βαθμός:"+str(record[4]) + " Όνομα:" + str(record[1])+ " ID:" + str(record[5]) +"\n" 
     # print(print_records)
     f= open("Lista Mou.txt","w+", encoding="utf-8")
     f.write("-Μέσος Όρος: " + str("%.2f" % avgscore[0][0]))
@@ -186,6 +193,7 @@ def myquery():
     f.write("\n-Περασμένα Υποχρεωτικά Επιλογής Ιστορίας: " +str(totalypoi[0][0]))
     f.write("\n-Περασμένα Υποχρεωτικά Επιλογής Φιλοσοφίας: " +str(totalypof[0][0]))
     f.write("\n-Περασμένα Επιλογής: " +str(totalepil[0][0])+"/9")
+    f.write("\n-Περασμένα Εργαστήρια: " +str(totallab[0][0])+"/2")
     f.write("\n\n\n-Αναλυτικά:\n" + print_records)
     f.close()
 
