@@ -32,8 +32,8 @@ def submit_add():
     duplcheck = dupl.fetchall()
     conn.commit()
     #Checking MARK input
-    # 1-Checking if the given value is in range(5,11) and is an int (and not a float)
-    if int(subj_mark_entry.get()) not in range(5,11,1):
+    # 1-Checking if the given value is in range(5,11) and is an int (and not a float) but allowing labs to be passed in without a score
+    if (subj_mark_entry.get() == "" or int(subj_mark_entry.get()) not in range(5,11,1)) and int(add_subj_entry.get()) not in range (100,102):
         messagebox.showerror("Invalid Input", "Your mark should be in range (5,10)")
     # 2-Checking if subject ID is in range(1,102) and is an int (and not a float)
     elif int(add_subj_entry.get()) not in [i for i in range(1,102,1)]:
@@ -44,14 +44,23 @@ def submit_add():
 
     # 4-Everything is ok - proceeding with the query
     else:
-        c = conn.cursor()
+        if int(add_subj_entry.get()) in range (100,102):
+            c = conn.cursor()
 
-        #Getting subject form All_Subjects and Score from entry 
-        c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points, Score, RealID) SELECT *, '"+ subj_mark_entry.get() + "', '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get()))
+            #Getting subject form All_Subjects and Score from entry 
+            c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points,  RealID) SELECT *, '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get()))
 
-        conn.commit()
-        conn.close()
-        print(duplcheck)
+            conn.commit()
+            conn.close()
+        else:
+            c = conn.cursor()
+
+            #Getting subject form All_Subjects and Score from entry 
+            c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points, Score, RealID) SELECT *, '"+ subj_mark_entry.get() + "', '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get()))
+
+            conn.commit()
+            conn.close()
+            print(duplcheck)
     #Clearing entries
     add_subj_entry.delete(0, END)
     subj_mark_entry.delete(0, END)
@@ -175,8 +184,6 @@ def myquery():
     lab.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Ερ'")
     totallab= lab.fetchall()
     conn.commit()
-
-
     conn.close()
 
 
