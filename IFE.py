@@ -2,6 +2,7 @@ from tkinter import *
 from PIL import ImageTk,Image
 import sqlite3
 from tkinter import messagebox
+import webbrowser
 
 root = Tk()
 root.title("IFE Home")
@@ -129,7 +130,8 @@ def allquery():
     f= open("Mathimata.txt","w+", encoding="utf-8")
     f.write(print_records)
     f.close
-
+    #Launching Mathimata.txt file in web browser
+    webbrowser.open("Mathimata.txt")
 
     conn.commit()
     conn.close()
@@ -203,6 +205,8 @@ def myquery():
     f.write("\n-Περασμένα Εργαστήρια: " +str(totallab[0][0])+"/2")
     f.write("\n\n\n-Αναλυτικά:\n" + print_records)
     f.close()
+    #Launching Lista Mou.txt file in web browser
+    webbrowser.open("Lista Mou.txt")
 
 #Create a ShowAll Query Button
 query_btn = Button(root, text="Show All Subjects", command=allquery)
