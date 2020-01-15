@@ -18,7 +18,7 @@ def submit_delete():
     c = conn.cursor()
 
     #Getting subject form All_Subjects and Score from entry 
-    c.execute("DELETE from My_Subjects WHERE RealID = " + del_subj_entry.get())
+    c.execute("DELETE from My_Subjects WHERE RealID = " + del_subj_entry.get()+";")
 
     conn.commit()
     conn.close()
@@ -29,7 +29,7 @@ def submit_add():
     #Will need this on #3 check to see if a subject already exists in My_Subjects
     conn = sqlite3.connect("IFE_APP.db")
     dupl=conn.cursor()
-    dupl.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE RealID = " + add_subj_entry.get())
+    dupl.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE RealID = " + add_subj_entry.get()+";")
     duplcheck = dupl.fetchall()
     conn.commit()
     #Checking MARK input
@@ -49,19 +49,17 @@ def submit_add():
             c = conn.cursor()
 
             #Getting subject form All_Subjects and Score from entry 
-            c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points,  RealID) SELECT *, '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get()))
-
+            c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points,  RealID) SELECT *, '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get()) +";")
             conn.commit()
-            conn.close()
+
         else:
             c = conn.cursor()
 
             #Getting subject form All_Subjects and Score from entry 
-            c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points, Score, RealID) SELECT *, '"+ subj_mark_entry.get() + "', '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get()))
-
+            c.execute("INSERT INTO My_Subjects (Code, Name, Orientation, Points, Score, RealID) SELECT *, '"+ subj_mark_entry.get() + "', '"+add_subj_entry.get()+"' FROM All_Subjects WHERE oid = " + str(add_subj_entry.get())+";")
             conn.commit()
-            conn.close()
-            print(duplcheck)
+    conn.close()
+    
     #Clearing entries
     add_subj_entry.delete(0, END)
     subj_mark_entry.delete(0, END)
@@ -117,7 +115,7 @@ def allquery():
     c = conn.cursor()
 
     # Query the database for all records + oid
-    c.execute("SELECT *, oid FROM All_Subjects")
+    c.execute("SELECT *, oid FROM All_Subjects;")
     #oid stands for the primary key
 
     records = c.fetchall()
@@ -138,52 +136,52 @@ def allquery():
 
 def myquery():
     conn = sqlite3.connect("IFE_APP.db")
-    passed = conn.cursor()
 
-    #Getting all passed classes
-    passed.execute("SELECT * FROM My_Subjects")
+    #Getting all passed classes in a sorted way
+    passed = conn.cursor()
+    passed.execute("SELECT * FROM My_Subjects ORDER BY RealID;")
     records = passed.fetchall()
     conn.commit()
 
     #Getting avarage score(grade)
     avg = conn.cursor()
-    avg.execute("SELECT AVG(Score) FROM My_Subjects")
+    avg.execute("SELECT AVG(Score) FROM My_Subjects;")
     avgscore = avg.fetchall()
     conn.commit()
 
     #Getting total Points (ECTS)
     point = conn.cursor()
-    point.execute("SELECT SUM(Points) FROM My_Subjects")
+    point.execute("SELECT SUM(Points) FROM My_Subjects;")
     totalpoints = point.fetchall()
     conn.commit()
 
     #Getting passed core curriculum
     #'Y' is greek
     ypo = conn.cursor()
-    ypo.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Υ'")
+    ypo.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Υ';")
     totalypo = ypo.fetchall()
     conn.commit()
 
     #Getting optional core corriculumn
     ypoi = conn.cursor()
-    ypoi.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'ΥEΙ'")
+    ypoi.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'ΥΕΙ';")
     totalypoi = ypoi.fetchall()
     conn.commit()
 
     ypof = conn.cursor()
-    ypof.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'ΥEΦ'")
+    ypof.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'ΥΕΦ';")
     totalypof = ypof.fetchall()
     conn.commit()
 
     #Getting optional core corriculumn
     epi = conn.cursor()
-    epi.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Ε'")
+    epi.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Ε';")
     totalepil= epi.fetchall()
     conn.commit()
 
     #Getting lab courses
     lab = conn.cursor()
-    lab.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Ερ'")
+    lab.execute("SELECT COUNT(RealID) FROM My_Subjects WHERE Orientation = 'Ερ';")
     totallab= lab.fetchall()
     conn.commit()
     conn.close()
